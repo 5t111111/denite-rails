@@ -9,6 +9,7 @@ import site
 
 path_to_this = os.path.abspath(os.path.dirname(__file__))
 site.addsitedir(os.path.join(path_to_this, 'rails'))
+site.addsitedir(os.path.join(path_to_this, 'rails', 'Inflector'))
 
 from model import Model
 from controller import Controller
