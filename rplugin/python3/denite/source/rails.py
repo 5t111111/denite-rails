@@ -47,11 +47,11 @@ class Source(Base):
         self.vim.command('syntax match deniteSource_railsController /Controller:/')
         self.vim.command('highlight link deniteSource_railsController Function')
         self.vim.command('syntax match deniteSource_railsModel /Model:/')
-        self.vim.command('highlight link deniteSource_railsModel Type')
+        self.vim.command('highlight link deniteSource_railsModel String')
         self.vim.command('syntax match deniteSource_railsHelper /Helper:/')
         self.vim.command('highlight link deniteSource_railsHelper Type')
         self.vim.command('syntax match deniteSource_railsView /View:/')
-        self.vim.command('highlight link deniteSource_railsView String')
+        self.vim.command('highlight link deniteSource_railsView Statement')
         self.vim.command('syntax match deniteSource_railsTest /Test:/')
         self.vim.command('highlight link deniteSource_railsTest Number')
 
