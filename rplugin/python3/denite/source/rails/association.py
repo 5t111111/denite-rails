@@ -91,7 +91,41 @@ class Association(Target):
 
             view_files = glob.glob('app/views/**/*', recursive=True)
             files.extend(['View: {0}'.format(filename) for filename in view_files if os.path.isfile(filename) and pluralized_name in filename])
+            test_files = glob.glob('test/helpers/**/*.rb', recursive=True)
+            files.extend(['Test: {0}'.format(filename) for filename in test_files if singularize_name in filename or pluralized_name in filename])
+
+            return [Association(filename) for filename in files]
+
+        if source_name.startswith('/app/views/'):
+            pluralized_name = os.path.dirname(source_name).split('/')[-1]
+            singularize_name = inflection.singularize(pluralized_name)
+
+            controller_files = glob.glob('app/controllers/**/*.rb', recursive=True)
+            files = ['Controller: {0}'.format(filename) for filename in controller_files if pluralized_name in filename]
+
+            model_files = glob.glob('app/models/**/*.rb', recursive=True)
+            files.extend(['Model: {0}'.format(filename) for filename in model_files if singularize_name in filename])
+
+            helper_files = glob.glob('app/helpers/**/*.rb', recursive=True)
+            files.extend(['Helper: {0}'.format(filename) for filename in helper_files if pluralized_name in filename])
+
             test_files = glob.glob('test/controllers/**/*.rb', recursive=True)
             files.extend(['Test: {0}'.format(filename) for filename in test_files if singularize_name in filename or pluralized_name in filename])
+
+            return [Association(filename) for filename in files]
+
+        if source_name.startswith('/test/models/'):
+            singularize_name = re.sub(r'_test', '', basename_without_ext)
+
+            model_files = glob.glob('app/models/**/*.rb', recursive=True)
+            files = ['Model: {0}'.format(filename) for filename in model_files if singularize_name in filename]
+
+            return [Association(filename) for filename in files]
+
+        if source_name.startswith('/test/controllers/'):
+            pluralized_name = re.sub(r'_controller_test', '', basename_without_ext)
+
+            controller_files = glob.glob('app/controllers/**/*.rb', recursive=True)
+            files = ['Controller: {0}'.format(filename) for filename in controller_files if pluralized_name in filename]
 
             return [Association(filename) for filename in files]
