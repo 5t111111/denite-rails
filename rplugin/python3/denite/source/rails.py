@@ -17,6 +17,7 @@ from model import Model
 from controller import Controller
 from view import View
 from helper import Helper
+from test_model import TestModel
 
 
 class Source(Base):
@@ -66,6 +67,8 @@ class Source(Base):
             return [self._convert(view) for view in View.find_all()]
         if context['__target'] == 'helper':
             return [self._convert(helper) for helper in Helper.find_all()]
+        if context['__target'] == 'test':
+            return [self._convert(test_model) for test_model in TestModel.find_all()]
         else:
             raise NameError('{0} is not valid denite-rails target'.format(context['__target']))
 
