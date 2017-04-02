@@ -1,6 +1,7 @@
 import os
 import inflection
 
+
 class Target:
     def __init__(self, filepath):
         self.filepath = os.path.normpath(filepath)

@@ -62,6 +62,47 @@ class DwimFinder:
         elif self._is_controller_test_file():
             return self._find_dwim_files_for_controller_test()
 
+    def _find_dwim_files_for_model(self):
+        result_list = []
+        result_list.extend(self._create_controller_list())
+        result_list.extend(self._create_helper_list())
+        result_list.extend(self._create_view_list())
+        result_list.extend(self._create_model_test_list())
+        return [DwimFile(x) for x in result_list]
+
+    def _find_dwim_files_for_controller(self):
+        result_list = []
+        result_list.extend(self._create_model_list())
+        result_list.extend(self._create_helper_list())
+        result_list.extend(self._create_view_list())
+        result_list.extend(self._create_controller_test_list())
+        return [DwimFile(x) for x in result_list]
+
+    def _find_dwim_files_for_helper(self):
+        result_list = []
+        result_list.extend(self._create_controller_list())
+        result_list.extend(self._create_model_list())
+        result_list.extend(self._create_view_list())
+        result_list.extend(self._create_helper_test_list())
+        return [DwimFile(x) for x in result_list]
+
+    def _find_dwim_files_for_view(self):
+        result_list = []
+        result_list.extend(self._create_controller_list())
+        result_list.extend(self._create_model_list())
+        result_list.extend(self._create_helper_list())
+        return [DwimFile(filename) for filename in result_list]
+
+    def _find_dwim_files_for_model_test(self):
+        result_list = []
+        result_list.extend(self._create_model_list())
+        return [DwimFile(filename) for filename in result_list]
+
+    def _find_dwim_files_for_controller_test(self):
+        result_list = []
+        result_list.extend(self._create_controller_list())
+        return [DwimFile(filename) for filename in result_list]
+
     def _is_model_file(self):
         dirpath = os.path.join(self.root_path, '/app/models/')
         return True if self.source_path.startswith(dirpath) else False
@@ -145,44 +186,3 @@ class DwimFinder:
     def _find_helper_test_files(self):
         l = finder_utils.glob_project(self.root_path, self.HELPER_TEST_GLOB_PATTERN)
         return [x for x in l if self.pluralized_name in x or self.singularized_name in x]
-
-    def _find_dwim_files_for_model(self):
-        result_list = []
-        result_list.extend(self._create_controller_list())
-        result_list.extend(self._create_helper_list())
-        result_list.extend(self._create_view_list())
-        result_list.extend(self._create_model_test_list())
-        return [DwimFile(x) for x in result_list]
-
-    def _find_dwim_files_for_controller(self):
-        result_list = []
-        result_list.extend(self._create_model_list())
-        result_list.extend(self._create_helper_list())
-        result_list.extend(self._create_view_list())
-        result_list.extend(self._create_controller_test_list())
-        return [DwimFile(x) for x in result_list]
-
-    def _find_dwim_files_for_helper(self):
-        result_list = []
-        result_list.extend(self._create_controller_list())
-        result_list.extend(self._create_model_list())
-        result_list.extend(self._create_view_list())
-        result_list.extend(self._create_helper_test_list())
-        return [DwimFile(x) for x in result_list]
-
-    def _find_dwim_files_for_view(self):
-        result_list = []
-        result_list.extend(self._create_controller_list())
-        result_list.extend(self._create_model_list())
-        result_list.extend(self._create_helper_list())
-        return [DwimFile(filename) for filename in result_list]
-
-    def _find_dwim_files_for_model_test(self):
-        result_list = []
-        result_list.extend(self._create_model_list())
-        return [DwimFile(filename) for filename in result_list]
-
-    def _find_dwim_files_for_controller_test(self):
-        result_list = []
-        result_list.extend(self._create_controller_list())
-        return [DwimFile(filename) for filename in result_list]
