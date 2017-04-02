@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import glob
 import re
 import os
 import inflection
@@ -8,7 +7,7 @@ import inflection
 import utilities
 from target import Target
 
-class Association(Target):
+class DwimFile(Target):
     def __init__(self, filepath):
         self.filepath_with_type_info = filepath
         filepath = re.sub(r'Controller: ', '', filepath)
@@ -41,7 +40,7 @@ class Association(Target):
 
     @staticmethod
     def find_associations(context):
-        root_path = context['__path2project']
+        root_path = context['__root_path']
         cbname = os.path.normpath(context['__cbname'])
         source_name = re.sub(root_path, '', cbname)
         basename = os.path.basename(source_name)
@@ -61,7 +60,7 @@ class Association(Target):
             test_files = utilities.glob_project(root_path, 'test/models/**/*.rb')
             files.extend(['Test: {0}'.format(filename) for filename in test_files if pluralized_name in filename or basename_without_ext in filename])
 
-            return [Association(filename) for filename in files]
+            return [DwimFile(filename) for filename in files]
 
         if source_name.startswith(os.path.join(root_path, '/app/controllers/')):
             pluralized_name = re.sub(r'_controller', '', basename_without_ext)
@@ -78,7 +77,7 @@ class Association(Target):
             test_files = utilities.glob_project(root_path, 'test/controllers/**/*.rb')
             files.extend(['Test: {0}'.format(filename) for filename in test_files if singularize_name in filename or pluralized_name in filename])
 
-            return [Association(filename) for filename in files]
+            return [DwimFile(filename) for filename in files]
 
         if source_name.startswith(os.path.join(root_path, '/app/helpers/')):
             pluralized_name = re.sub(r'_helper', '', basename_without_ext)
@@ -95,7 +94,7 @@ class Association(Target):
             test_files = utilities.glob_project(root_path, 'test/helpers/**/*.rb')
             files.extend(['Test: {0}'.format(filename) for filename in test_files if singularize_name in filename or pluralized_name in filename])
 
-            return [Association(filename) for filename in files]
+            return [DwimFile(filename) for filename in files]
 
         if source_name.startswith(os.path.join(root_path, '/app/views/')):
             pluralized_name = os.path.dirname(source_name).split('/')[-1]
@@ -113,7 +112,7 @@ class Association(Target):
             test_files = utilities.glob_project(root_path, 'test/controllers/**/*.rb')
             files.extend(['Test: {0}'.format(filename) for filename in test_files if singularize_name in filename or pluralized_name in filename])
 
-            return [Association(filename) for filename in files]
+            return [DwimFile(filename) for filename in files]
 
         if source_name.startswith(os.path.join(root_path, '/test/models/')):
             singularize_name = re.sub(r'_test', '', basename_without_ext)
@@ -121,7 +120,7 @@ class Association(Target):
             model_files = utilities.glob_project(root_path, 'app/models/**/*.rb')
             files = ['Model: {0}'.format(filename) for filename in model_files if singularize_name in filename]
 
-            return [Association(filename) for filename in files]
+            return [DwimFile(filename) for filename in files]
 
         if source_name.startswith(os.path.join(root_path, '/test/controllers/')):
             pluralized_name = re.sub(r'_controller_test', '', basename_without_ext)
@@ -129,4 +128,4 @@ class Association(Target):
             controller_files = utilities.glob_project(root_path, 'app/controllers/**/*.rb')
             files = ['Controller: {0}'.format(filename) for filename in controller_files if pluralized_name in filename]
 
-            return [Association(filename) for filename in files]
+            return [DwimFile(filename) for filename in files]
