@@ -13,9 +13,3 @@ class ViewFile(Target):
 
     def to_word(self, root_path):
         return self.remove_base_directory(self.filepath, root_path)
-
-    @staticmethod
-    def find_all(context):
-        files = utilities.glob_project(context['__root_path'], 'app/views/**/*')
-        files = [filename for filename in files if os.path.isfile(filename)]
-        return [ViewFile(filename) for filename in files]
