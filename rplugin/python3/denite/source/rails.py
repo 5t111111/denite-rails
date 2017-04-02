@@ -2,22 +2,21 @@
 
 from denite import util
 from .base import Base
-import re
-import glob
+
 import os
 import site
 
-path_to_this = os.path.abspath(os.path.dirname(__file__))
-site.addsitedir(os.path.join(path_to_this, 'rails'))
-site.addsitedir(os.path.join(path_to_this, 'rails', 'Inflector'))
-site.addsitedir(os.path.join(path_to_this, 'rails', 'inflection'))
+# Add external modules
+path_to_lib = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'modules')
+site.addsitedir(path_to_lib)
+site.addsitedir(os.path.join(path_to_lib, 'inflection'))
 
-from association import Association
-from model import Model
-from controller import Controller
-from view import View
-from helper import Helper
-from test_model import TestModel
+from association import Association # noqa
+from model import Model # noqa
+from controller import Controller # noqa
+from view import View # noqa
+from helper import Helper # noqa
+from test_model import TestModel # noqa
 
 
 class Source(Base):
@@ -27,7 +26,6 @@ class Source(Base):
         self.name = 'rails'
         self.kind = 'file'
 
-
     def on_init(self, context):
         try:
             context['__target'] = context['args'][0]
@@ -35,6 +33,7 @@ class Source(Base):
             raise NameError('target must be provided')
 
         context['__cbname'] = self.vim.current.buffer.name
+        context['__path2project'] = util.path2project(self.vim, self.vim.current.buffer.name)
 
     def highlight(self):
         # TODO syntax does not work as expected
@@ -58,23 +57,23 @@ class Source(Base):
 
     def gather_candidates(self, context):
         if context['__target'] == 'dwim':
-            return [self._convert(association) for association in Association.find_associations(context)]
+            return [self._convert(context, association) for association in Association.find_associations(context)]
         if context['__target'] == 'model':
-            return [self._convert(model) for model in Model.find_all()]
+            return [self._convert(context, model) for model in Model.find_all(context['__path2project'])]
         if context['__target'] == 'controller':
-            return [self._convert(controller) for controller in Controller.find_all()]
+            return [self._convert(context, controller) for controller in Controller.find_all(context['__path2project'])]
         if context['__target'] == 'view':
-            return [self._convert(view) for view in View.find_all()]
+            return [self._convert(context, view) for view in View.find_all(context['__path2project'])]
         if context['__target'] == 'helper':
-            return [self._convert(helper) for helper in Helper.find_all()]
+            return [self._convert(context, helper) for helper in Helper.find_all(context['__path2project'])]
         if context['__target'] == 'test':
-            return [self._convert(test_model) for test_model in TestModel.find_all()]
+            return [self._convert(context, test_model) for test_model in TestModel.find_all(context['__path2project'])]
         else:
             raise NameError('{0} is not valid denite-rails target'.format(context['__target']))
 
-    def _convert(self, obj):
+    def _convert(self, context, obj):
         result_dict = {
-                'word': obj.to_word(),
+                'word': obj.to_word(context['__path2project']),
                 'action__path': obj.filepath,
                 'action__line': 1,
                 'action__col': 1
