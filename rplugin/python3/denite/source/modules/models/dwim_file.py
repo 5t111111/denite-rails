@@ -4,7 +4,6 @@ import re
 import os
 import inflection
 
-import utilities
 from target import Target
 
 class DwimFile(Target):

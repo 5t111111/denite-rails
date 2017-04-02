@@ -10,10 +10,7 @@ from dwim_file import DwimFile
 class DwimFinder:
     def __init__(self, context):
         self.context = context
-
-    @property
-    def root_path(self):
-        return self.context['__root_path']
+        self.root_path = context['__root_path']
 
     def is_model_file(self, base_filepath):
         dirpath = os.path.join(self.root_path, '/app/models/')

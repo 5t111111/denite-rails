@@ -7,13 +7,20 @@ import os
 import site
 
 # Add external modules
-path_to_modules = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'modules')
+path_to_this_dir = os.path.abspath(os.path.dirname(__file__))
+path_to_modules = os.path.join(path_to_this_dir, 'modules')
 site.addsitedir(path_to_modules)
 site.addsitedir(os.path.join(path_to_modules, 'inflection'))
 site.addsitedir(os.path.join(path_to_modules, 'finders'))
 site.addsitedir(os.path.join(path_to_modules, 'models'))
 
-from collection import Collection # noqa
+from dwim_finder import DwimFinder # noqa
+from model_finder import ModelFinder # noqa
+from controller_finder import ControllerFinder # noqa
+from helper_finder import HelperFinder # noqa
+from view_finder import ViewFinder # noqa
+from test_finder import TestFinder # noqa
+
 
 class Source(Base):
 
@@ -28,8 +35,9 @@ class Source(Base):
         except IndexError:
             raise NameError('target must be provided')
 
-        context['__cbname'] = self.vim.current.buffer.name
-        context['__root_path'] = util.path2project(self.vim, self.vim.current.buffer.name)
+        cbname = self.vim.current.buffer.name
+        context['__cbname'] = cbname
+        context['__root_path'] = util.path2project(self.vim, cbname)
 
     def highlight(self):
         # TODO syntax does not work as expected
@@ -39,7 +47,6 @@ class Source(Base):
         self.vim.command('highlight link deniteSource_railsSeparator Identifier')
         self.vim.command('syntax region deniteSource_railsPath start=+(+ end=+)+')
         self.vim.command('highlight link deniteSource_railsPath Statement')
-
         self.vim.command('syntax match deniteSource_railsController /Controller:/')
         self.vim.command('highlight link deniteSource_railsController Function')
         self.vim.command('syntax match deniteSource_railsModel /Model:/')
@@ -52,14 +59,33 @@ class Source(Base):
         self.vim.command('highlight link deniteSource_railsTest Number')
 
     def gather_candidates(self, context):
-        collection = Collection(context)
-        return [self._convert(context, x) for x in collection.find_files()]
+        return [self._convert(context, x) for x in self._find_files(context)]
+
+    def _find_files(self, context):
+        target = context['__target']
+
+        if target == 'dwim':
+            finder_class = DwimFinder
+        elif target == 'model':
+            finder_class = ModelFinder
+        elif target == 'controller':
+            finder_class = ControllerFinder
+        elif target == 'helper':
+            finder_class = HelperFinder
+        elif target == 'view':
+            finder_class = ViewFinder
+        elif target == 'test':
+            finder_class = TestFinder
+        else:
+            msg = '{0} is not valid denite-rails target'.format(target)
+            raise NameError(msg)
+
+        return finder_class(context).find_files()
 
     def _convert(self, context, file_object):
         result_dict = {
-                'word': file_object.to_word(context['__root_path']),
-                'action__path': file_object.filepath,
-                'action__line': 1,
-                'action__col': 1
-                }
+            'word': file_object.to_word(context['__root_path']),
+            'action__path': file_object.filepath
+        }
+
         return result_dict

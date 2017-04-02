@@ -3,7 +3,6 @@
 import re
 import os
 
-import utilities
 from target import Target
 
 class ControllerFile(Target):
