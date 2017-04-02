@@ -2,10 +2,10 @@ import re
 import os
 import inflection
 
-from target import Target
+from file_base import FileBase
 
 
-class DwimFile(Target):
+class DwimFile(FileBase):
     def __init__(self, filepath):
         self.filepath_with_type_info = filepath
         pattern = re.compile(r'^.+: ?')
