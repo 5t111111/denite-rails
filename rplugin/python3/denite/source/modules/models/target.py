@@ -1,6 +1,4 @@
-import re
 import os
-import glob
 import inflection
 
 class Target:

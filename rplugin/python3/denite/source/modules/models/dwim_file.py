@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-
 import re
 import os
 import inflection
 
 from target import Target
+
 
 class DwimFile(Target):
     def __init__(self, filepath):
@@ -21,6 +20,7 @@ class DwimFile(Target):
         filename = re.sub(os.path.join(root_path, 'app/controllers/'), '', filename)
         filename = re.sub(os.path.join(root_path, 'app/helpers/'), '', filename)
         filename = re.sub(os.path.join(root_path, 'app/views/'), '', filename)
+        filename = re.sub(os.path.join(root_path, 'test/'), '', filename)
         return filename
 
     def to_word(self, root_path):

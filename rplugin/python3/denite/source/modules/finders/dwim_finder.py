@@ -8,133 +8,181 @@ from dwim_file import DwimFile
 
 
 class DwimFinder:
+
+    MODEL_GLOB_PATTERN = 'app/models/**/*.rb'
+    CONTROLLER_GLOB_PATTERN = 'app/controllers/**/*.rb'
+    HELPER_GLOB_PATTERN = 'app/helpers/**/*.rb'
+    VIEW_GLOB_PATTERN = 'app/views/**/*'
+    MODEL_TEST_GLOB_PATTERN = 'test/models/**/*.rb'
+    CONTROLLER_TEST_GLOB_PATTERN = 'test/controllers/**/*.rb'
+    HELPER_TEST_GLOB_PATTERN = 'test/helpers/**/*.rb'
+
     def __init__(self, context):
         self.context = context
         self.root_path = context['__root_path']
+        cbname = os.path.normpath(self.context['__cbname'])
+        self.source_path = re.sub(self.root_path, '', cbname)
 
-    def is_model_file(self, base_filepath):
-        dirpath = os.path.join(self.root_path, '/app/models/')
-        return True if base_filepath.startswith(dirpath) else False
+    @property
+    def source_name(self):
+        basename = os.path.basename(self.source_path)
 
-    def is_controller_file(self, base_filepath):
-        dirpath = os.path.join(self.root_path, '/app/controllers/')
-        return True if base_filepath.startswith(dirpath) else False
+        if self._is_controller_file():
+            basename = re.sub(r'_controller', '', basename)
+        elif self._is_helper_file():
+            basename = re.sub(r'_helper', '', basename)
+        elif self._is_view_file():
+            basename = os.path.dirname(self.source_path).split('/')[-1]
+        elif self._is_model_test_file():
+            basename = re.sub(r'_test', '', basename)
+        elif self._is_controller_test_file():
+            basename = re.sub(r'_controller_test', '', basename)
 
-    def is_helper_file(self, base_filepath):
-        dirpath = os.path.join(self.root_path, '/app/helpers/')
-        return True if base_filepath.startswith(dirpath) else False
+        return os.path.splitext(basename)[0]
 
-    def is_view_file(self, base_filepath):
-        dirpath = os.path.join(self.root_path, '/app/views/')
-        return True if base_filepath.startswith(dirpath) else False
+    @property
+    def pluralized_name(self):
+        return inflection.pluralize(self.source_name)
 
-    def is_model_test_file(self, base_filepath):
-        dirpath = os.path.join(self.root_path, '/test/models/')
-        return True if base_filepath.startswith(dirpath) else False
-
-    def is_controller_test_file(self, base_filepath):
-        dirpath = os.path.join(self.root_path, '/test/controllers/')
-        return True if base_filepath.startswith(dirpath) else False
+    @property
+    def singularized_name(self):
+        return inflection.singularize(self.source_name)
 
     def find_files(self):
-        cbname = os.path.normpath(self.context['__cbname'])
-        source_name = re.sub(self.root_path, '', cbname)
-        basename = os.path.basename(source_name)
-        basename_without_ext = os.path.splitext(basename)[0]
+        if self._is_model_file():
+            return self._find_dwim_files_for_model()
+        elif self._is_controller_file():
+            return self._find_dwim_files_for_controller()
+        elif self._is_helper_file():
+            return self._find_dwim_files_for_helper()
+        elif self._is_view_file():
+            return self._find_dwim_files_for_view()
+        elif self._is_model_test_file():
+            return self._find_dwim_files_for_model_test()
+        elif self._is_controller_test_file():
+            return self._find_dwim_files_for_controller_test()
 
-        if self.is_model_file(source_name):
-            return self._find_dwim_files_for_model(basename_without_ext)
-        elif self.is_controller_file(source_name):
-            return self._find_dwim_files_for_controller(basename_without_ext)
-        elif self.is_helper_file(source_name):
-            return self._find_dwim_files_for_helper(basename_without_ext)
-        elif self.is_view_file(source_name):
-            return self._find_dwim_files_for_view(os.path.dirname(source_name).split('/')[-1])
-        elif self.is_model_test_file(source_name):
-            return self._find_dwim_files_for_model_test(basename_without_ext)
-        elif self.is_controller_test_file(source_name):
-            return self._find_dwim_files_for_controller_test(basename_without_ext)
+    def _is_model_file(self):
+        dirpath = os.path.join(self.root_path, '/app/models/')
+        return True if self.source_path.startswith(dirpath) else False
 
-    def _find_dwim_files_for_model(self, base_filename):
-        pluralized_name = inflection.pluralize(base_filename)
+    def _is_controller_file(self):
+        dirpath = os.path.join(self.root_path, '/app/controllers/')
+        return True if self.source_path.startswith(dirpath) else False
 
-        controller_files = finder_utils.glob_project(self.root_path, 'app/controllers/**/*.rb')
-        files = ['Controller: {0}'.format(filename) for filename in controller_files if pluralized_name in filename]
+    def _is_helper_file(self):
+        dirpath = os.path.join(self.root_path, '/app/helpers/')
+        return True if self.source_path.startswith(dirpath) else False
 
-        helper_files = finder_utils.glob_project(self.root_path, 'app/helpers/**/*.rb')
-        files.extend(['Helper: {0}'.format(filename) for filename in helper_files if pluralized_name in filename])
+    def _is_view_file(self):
+        dirpath = os.path.join(self.root_path, '/app/views/')
+        return True if self.source_path.startswith(dirpath) else False
 
-        view_files = finder_utils.glob_project(self.root_path, 'app/views/**/*')
-        files.extend(['View: {0}'.format(filename) for filename in view_files if os.path.isfile(filename) and pluralized_name in filename])
-        test_files = finder_utils.glob_project(self.root_path, 'test/models/**/*.rb')
-        files.extend(['Test: {0}'.format(filename) for filename in test_files if pluralized_name in filename or base_filename in filename])
+    def _is_model_test_file(self):
+        dirpath = os.path.join(self.root_path, '/test/models/')
+        return True if self.source_path.startswith(dirpath) else False
 
-        return [DwimFile(filename) for filename in files]
+    def _is_controller_test_file(self):
+        dirpath = os.path.join(self.root_path, '/test/controllers/')
+        return True if self.source_path.startswith(dirpath) else False
 
-    def _find_dwim_files_for_controller(self, base_filename):
-        pluralized_name = re.sub(r'_controller', '', base_filename)
-        singularize_name = inflection.singularize(pluralized_name)
+    def _is_helper_test_file(self):
+        dirpath = os.path.join(self.root_path, '/test/helpers/')
+        return True if self.source_path.startswith(dirpath) else False
 
-        model_files = finder_utils.glob_project(self.root_path, 'app/models/**/*.rb')
-        files = ['Model: {0}'.format(filename) for filename in model_files if singularize_name in filename]
+    def _create_model_list(self):
+        l = self._find_model_files()
+        return ['Model: {0}'.format(x) for x in l]
 
-        helper_files = finder_utils.glob_project(self.root_path, 'app/helpers/**/*.rb')
-        files.extend(['Helper: {0}'.format(filename) for filename in helper_files if pluralized_name in filename])
+    def _create_controller_list(self):
+        l = self._find_controller_files()
+        return ['Controller: {0}'.format(x) for x in l]
 
-        view_files = finder_utils.glob_project(self.root_path, 'app/views/**/*')
-        files.extend(['View: {0}'.format(filename) for filename in view_files if os.path.isfile(filename) and pluralized_name in filename])
-        test_files = finder_utils.glob_project(self.root_path, 'test/controllers/**/*.rb')
-        files.extend(['Test: {0}'.format(filename) for filename in test_files if singularize_name in filename or pluralized_name in filename])
+    def _create_helper_list(self):
+        l = self._find_helper_files()
+        return ['Helper: {0}'.format(x) for x in l]
 
-        return [DwimFile(filename) for filename in files]
+    def _create_view_list(self):
+        l = self._find_view_files()
+        return ['View: {0}'.format(x) for x in l]
 
-    def _find_dwim_files_for_helper(self, base_filename):
-        pluralized_name = re.sub(r'_helper', '', base_filename)
-        singularize_name = inflection.singularize(pluralized_name)
+    def _create_model_test_list(self):
+        l = self._find_model_test_files()
+        return ['Test: {0}'.format(x) for x in l]
 
-        controller_files = finder_utils.glob_project(self.root_path, 'app/controllers/**/*.rb')
-        files = ['Controller: {0}'.format(filename) for filename in controller_files if pluralized_name in filename]
+    def _create_controller_test_list(self):
+        l = self._find_controller_test_files()
+        return ['Test: {0}'.format(x) for x in l]
 
-        model_files = finder_utils.glob_project(self.root_path, 'app/models/**/*.rb')
-        files = ['Model: {0}'.format(filename) for filename in model_files if singularize_name in filename]
+    def _create_helper_test_list(self):
+        l = self._find_helper_test_files()
+        return ['Test: {0}'.format(x) for x in l]
 
-        view_files = finder_utils.glob_project(self.root_path, 'app/views/**/*')
-        files.extend(['View: {0}'.format(filename) for filename in view_files if os.path.isfile(filename) and pluralized_name in filename])
-        test_files = finder_utils.glob_project(self.root_path, 'test/helpers/**/*.rb')
-        files.extend(['Test: {0}'.format(filename) for filename in test_files if singularize_name in filename or pluralized_name in filename])
+    def _find_model_files(self):
+        l = finder_utils.glob_project(self.root_path, self.MODEL_GLOB_PATTERN)
+        return [x for x in l if self.singularized_name in x]
 
-        return [DwimFile(filename) for filename in files]
+    def _find_controller_files(self):
+        l = finder_utils.glob_project(self.root_path, self.CONTROLLER_GLOB_PATTERN)
+        return [x for x in l if self.pluralized_name in x]
 
-    def _find_dwim_files_for_view(self, base_filename):
-        pluralized_name = base_filename
-        singularize_name = inflection.singularize(pluralized_name)
+    def _find_helper_files(self):
+        l = finder_utils.glob_project(self.root_path, self.HELPER_GLOB_PATTERN)
+        return [x for x in l if self.pluralized_name in x]
 
-        controller_files = finder_utils.glob_project(self.root_path, 'app/controllers/**/*.rb')
-        files = ['Controller: {0}'.format(filename) for filename in controller_files if pluralized_name in filename]
+    def _find_view_files(self):
+        l = finder_utils.glob_project(self.root_path, self.VIEW_GLOB_PATTERN)
+        return [x for x in l if os.path.isfile(x) and self.pluralized_name in x]
 
-        model_files = finder_utils.glob_project(self.root_path, 'app/models/**/*.rb')
-        files.extend(['Model: {0}'.format(filename) for filename in model_files if singularize_name in filename])
+    def _find_model_test_files(self):
+        l = finder_utils.glob_project(self.root_path, self.MODEL_TEST_GLOB_PATTERN)
+        return [x for x in l if self.pluralized_name in x or self.singularized_name in x]
 
-        helper_files = finder_utils.glob_project(self.root_path, 'app/helpers/**/*.rb')
-        files.extend(['Helper: {0}'.format(filename) for filename in helper_files if pluralized_name in filename])
+    def _find_controller_test_files(self):
+        l = finder_utils.glob_project(self.root_path, self.CONTROLLER_TEST_GLOB_PATTERN)
+        return [x for x in l if self.pluralized_name in x or self.singularized_name in x]
 
-        test_files = finder_utils.glob_project(self.root_path, 'test/controllers/**/*.rb')
-        files.extend(['Test: {0}'.format(filename) for filename in test_files if singularize_name in filename or pluralized_name in filename])
+    def _find_helper_test_files(self):
+        l = finder_utils.glob_project(self.root_path, self.HELPER_TEST_GLOB_PATTERN)
+        return [x for x in l if self.pluralized_name in x or self.singularized_name in x]
 
-        return [DwimFile(filename) for filename in files]
+    def _find_dwim_files_for_model(self):
+        result_list = []
+        result_list.extend(self._create_controller_list())
+        result_list.extend(self._create_helper_list())
+        result_list.extend(self._create_view_list())
+        result_list.extend(self._create_model_test_list())
+        return [DwimFile(x) for x in result_list]
 
-    def _find_dwim_files_for_model_test(self, base_filename):
-        singularize_name = re.sub(r'_test', '', base_filename)
+    def _find_dwim_files_for_controller(self):
+        result_list = []
+        result_list.extend(self._create_model_list())
+        result_list.extend(self._create_helper_list())
+        result_list.extend(self._create_view_list())
+        result_list.extend(self._create_controller_test_list())
+        return [DwimFile(x) for x in result_list]
 
-        model_files = finder_utils.glob_project(self.root_path, 'app/models/**/*.rb')
-        files = ['Model: {0}'.format(filename) for filename in model_files if singularize_name in filename]
+    def _find_dwim_files_for_helper(self):
+        result_list = []
+        result_list.extend(self._create_controller_list())
+        result_list.extend(self._create_model_list())
+        result_list.extend(self._create_view_list())
+        result_list.extend(self._create_helper_test_list())
+        return [DwimFile(x) for x in result_list]
 
-        return [DwimFile(filename) for filename in files]
+    def _find_dwim_files_for_view(self):
+        result_list = []
+        result_list.extend(self._create_controller_list())
+        result_list.extend(self._create_model_list())
+        result_list.extend(self._create_helper_list())
+        return [DwimFile(filename) for filename in result_list]
 
-    def _find_dwim_files_for_controller_test(self, base_filename):
-        pluralized_name = re.sub(r'_controller_test', '', base_filename)
+    def _find_dwim_files_for_model_test(self):
+        result_list = []
+        result_list.extend(self._create_model_list())
+        return [DwimFile(filename) for filename in result_list]
 
-        controller_files = finder_utils.glob_project(self.root_path, 'app/controllers/**/*.rb')
-        files = ['Controller: {0}'.format(filename) for filename in controller_files if pluralized_name in filename]
-
-        return [DwimFile(filename) for filename in files]
+    def _find_dwim_files_for_controller_test(self):
+        result_list = []
+        result_list.extend(self._create_controller_list())
+        return [DwimFile(filename) for filename in result_list]
