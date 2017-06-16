@@ -59,7 +59,11 @@ class Source(Base):
         self.vim.command('highlight link deniteSource_railsTest Number')
 
     def gather_candidates(self, context):
-        return [self._convert(context, x) for x in self._find_files(context)]
+        file_list = self._find_files(context)
+        if file_list is not None:
+            return [self._convert(context, x) for x in file_list]
+        else:
+            return []
 
     def _find_files(self, context):
         target = context['__target']
