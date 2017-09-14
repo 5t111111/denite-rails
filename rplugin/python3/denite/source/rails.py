@@ -20,6 +20,7 @@ from controller_finder import ControllerFinder # noqa
 from helper_finder import HelperFinder # noqa
 from view_finder import ViewFinder # noqa
 from test_finder import TestFinder # noqa
+from spec_finder import SpecFinder # noqa
 
 
 class Source(Base):
@@ -80,6 +81,8 @@ class Source(Base):
             finder_class = ViewFinder
         elif target == 'test':
             finder_class = TestFinder
+        elif target == 'spec':
+            finder_class = SpecFinder
         else:
             msg = '{0} is not valid denite-rails target'.format(target)
             raise NameError(msg)

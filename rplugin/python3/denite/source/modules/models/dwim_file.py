@@ -23,10 +23,12 @@ class DwimFile(FileBase):
             dirpath = os.path.join(root_path, 'app/views/')
         elif self.type_info == 'Test: ':
             dirpath = os.path.join(root_path, 'test/')
+        elif self.type_info == 'Spec: ':
+            dirpath = os.path.join(root_path, 'spec/')
         return re.sub(dirpath, '', filename)
 
     def to_word(self, root_path):
-        if self.type_info == 'View: ' or self.type_info == 'Test: ':
+        if self.type_info == 'View: ' or self.type_info == 'Test: ' or self.type_info == 'Spec: ':
             return self.remove_base_directory(self.filepath_with_type_info, root_path)
         else:
             return self.to_constant(root_path)
