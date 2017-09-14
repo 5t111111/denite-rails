@@ -58,6 +58,8 @@ class Source(Base):
         self.vim.command('highlight link deniteSource_railsView Statement')
         self.vim.command('syntax match deniteSource_railsTest /Test:/')
         self.vim.command('highlight link deniteSource_railsTest Number')
+        self.vim.command('syntax match deniteSource_railsSpec /Spec:/')
+        self.vim.command('highlight link deniteSource_railsSpec Number')
 
     def gather_candidates(self, context):
         file_list = self._find_files(context)
