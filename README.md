@@ -38,7 +38,7 @@ nnoremap <silent> [rails]s :<C-u>Denite<Space>rails:spec<Return>
 ## TODO
 
 - Support decorators/fixtures/etc.
-- Support RSpec/Cucumber/etc.
+- Support Cucumber/Turnip etc.
 - Smarter namespace handling
 - Refactoring
 - Write tests
