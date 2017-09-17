@@ -243,8 +243,6 @@ class DwimFinder:
 
     def _find_controller_spec_files(self):
         l = finder_utils.glob_project(self.root_path, self.CONTROLLER_SPEC_GLOB_PATTERN)
-        print(l)
-        print(finder_utils.remove_base_directory(l[0], self.root_path, 'spec/controllers/'))
         return [x for x in l if self.pluralized_name in finder_utils.remove_base_directory(x, self.root_path, 'spec/controllers/') or self.singularized_name in finder_utils.remove_base_directory(x, self.root_path, 'spec/controllers/')]
 
     def _find_helper_spec_files(self):
