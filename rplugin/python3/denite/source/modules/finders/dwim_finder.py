@@ -210,41 +210,43 @@ class DwimFinder:
 
     def _find_model_files(self):
         l = finder_utils.glob_project(self.root_path, self.MODEL_GLOB_PATTERN)
-        return [x for x in l if self.singularized_name in x]
+        return [x for x in l if self.singularized_name in finder_utils.remove_base_directory(x, self.root_path, 'app/models/')]
 
     def _find_controller_files(self):
         l = finder_utils.glob_project(self.root_path,
                                       self.CONTROLLER_GLOB_PATTERN)
-        return [x for x in l if self.pluralized_name in x]
+        return [x for x in l if self.pluralized_name in finder_utils.remove_base_directory(x, self.root_path, 'app/controllers/')]
 
     def _find_helper_files(self):
         l = finder_utils.glob_project(self.root_path, self.HELPER_GLOB_PATTERN)
-        return [x for x in l if self.pluralized_name in x]
+        return [x for x in l if self.pluralized_name in finder_utils.remove_base_directory(x, self.root_path, 'app/helpers/')]
 
     def _find_view_files(self):
         l = finder_utils.glob_project(self.root_path, self.VIEW_GLOB_PATTERN)
-        return [x for x in l if os.path.isfile(x) and self.pluralized_name in x]
+        return [x for x in l if os.path.isfile(x) and self.pluralized_name in finder_utils.remove_base_directory(x, self.root_path, 'app/views/')]
 
     def _find_model_test_files(self):
         l = finder_utils.glob_project(self.root_path, self.MODEL_TEST_GLOB_PATTERN)
-        return [x for x in l if self.pluralized_name in x or self.singularized_name in x]
+        return [x for x in l if self.pluralized_name in finder_utils.remove_base_directory(x, self.root_path, 'test/models/') or self.singularized_name in finder_utils.remove_base_directory(x, self.root_path, 'test/models/')]
 
     def _find_controller_test_files(self):
         l = finder_utils.glob_project(self.root_path, self.CONTROLLER_TEST_GLOB_PATTERN)
-        return [x for x in l if self.pluralized_name in x or self.singularized_name in x]
+        return [x for x in l if self.pluralized_name in finder_utils.remove_base_directory(x, self.root_path, 'test/controllers/') or self.singularized_name in finder_utils.remove_base_directory(x, self.root_path, 'test/controllers/')]
 
     def _find_helper_test_files(self):
         l = finder_utils.glob_project(self.root_path, self.HELPER_TEST_GLOB_PATTERN)
-        return [x for x in l if self.pluralized_name in x or self.singularized_name in x]
+        return [x for x in l if self.pluralized_name in finder_utils.remove_base_directory(x, self.root_path, 'test/helpers/') or self.singularized_name in finder_utils.remove_base_directory(x, self.root_path, 'test/helpers/')]
 
     def _find_model_spec_files(self):
         l = finder_utils.glob_project(self.root_path, self.MODEL_SPEC_GLOB_PATTERN)
-        return [x for x in l if self.pluralized_name in x or self.singularized_name in x]
+        return [x for x in l if self.pluralized_name in finder_utils.remove_base_directory(x, self.root_path, 'spec/models/') or self.singularized_name in finder_utils.remove_base_directory(x, self.root_path, 'spec/models/')]
 
     def _find_controller_spec_files(self):
         l = finder_utils.glob_project(self.root_path, self.CONTROLLER_SPEC_GLOB_PATTERN)
-        return [x for x in l if self.pluralized_name in x or self.singularized_name in x]
+        print(l)
+        print(finder_utils.remove_base_directory(l[0], self.root_path, 'spec/controllers/'))
+        return [x for x in l if self.pluralized_name in finder_utils.remove_base_directory(x, self.root_path, 'spec/controllers/') or self.singularized_name in finder_utils.remove_base_directory(x, self.root_path, 'spec/controllers/')]
 
     def _find_helper_spec_files(self):
         l = finder_utils.glob_project(self.root_path, self.HELPER_SPEC_GLOB_PATTERN)
-        return [x for x in l if self.pluralized_name in x or self.singularized_name in x]
+        return [x for x in l if self.pluralized_name in finder_utils.remove_base_directory(x, self.root_path, 'spec/helpers/') or self.singularized_name in finder_utils.remove_base_directory(x, self.root_path, 'spec/helpers/')]
