@@ -7,8 +7,8 @@ import os
 import site
 
 # Add external modules
-path_to_this_dir = os.path.abspath(os.path.dirname(__file__))
-path_to_modules = os.path.join(path_to_this_dir, 'modules')
+path_to_parent_dir = os.path.abspath(os.path.dirname(__file__) + '/../')
+path_to_modules = os.path.join(path_to_parent_dir, 'modules')
 site.addsitedir(path_to_modules)
 site.addsitedir(os.path.join(path_to_modules, 'inflection'))
 site.addsitedir(os.path.join(path_to_modules, 'finders'))
